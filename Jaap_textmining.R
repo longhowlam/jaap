@@ -74,10 +74,14 @@ vectorizer = vocab_vectorizer(pruned_vocab)
 dtm = create_dtm(iter, vectorizer)
 dim(dtm)
 
-# define tfidf model
+# define tfidf model (Inverse document frequency)
 tfidf = TfIdf$new()
 # fit model to train data and transform train data with fitted model
 dtm_tfidf = fit_transform(dtm, tfidf)
+dim(dtm_tfidf)
+
+#eerste rij 
+dtm_tfidf[1,]
 
 
 ########## fit price models ###############
@@ -159,7 +163,7 @@ xgbmodel = xgboost(
 varimp = xgb.importance(colnames(dtm_train), model = xgbmodel)
 head(varimp, 25)
 
-
+### nice plots but not very useful....
 xgb.plot.tree(colnames(dtm_train), model = xgbmodel, n_first_tree = 3)
 
 p = xgb.plot.multi.trees(
@@ -172,8 +176,8 @@ print(p)
 
 ## R squared calculation on the hold out test set
 test_huizenprijs = predict(xgbmodel, newdata =  dtm_test)
-R2 = 1 - sum((target_test - test_huizenprijs)^2) / sum((target_test - mean(target_test))^2)
-R2
+R2_xgb = 1 - sum((target_test - test_huizenprijs)^2) / sum((target_test - mean(target_test))^2)
+R2_xgb
 
 
 
