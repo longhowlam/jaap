@@ -4,7 +4,10 @@ library(stringr)
 library(glmnet)
 library(xgboost)
 
-## import scraped house data from www.jaap.nl
+#### import scraped house data #######################################################
+
+## see JaapScraper.R in this same git repo project https://github.com/longhowlam/jaap
+
 jaap = readRDS("JaapResultsLongDesc20170528.RDs")
 
 ## import postcode data, not really needed for text mining
@@ -23,6 +26,8 @@ city = jaap %>%
     median = median(prijs, na.rm=TRUE)
   )
 
+
+#### Cleaning up text ####################################################
 
 ### remove empty descriptions, short descriptions outlying prices 
 jaap = jaap %>%
@@ -45,7 +50,7 @@ jaap = jaap %>%
 jaap$id = 1:dim(jaap)[1]
 
 
-###########  text mining part ##############################
+#### Text mining part ###########################################################
 
 ## tokennize
 
@@ -84,7 +89,7 @@ dim(dtm_tfidf)
 dtm_tfidf[1,]
 
 
-########## fit price models ###############
+#### Fit price models ############################################################
 
 ## split into test and train
 
@@ -104,7 +109,7 @@ target_train = jaap$prijs[tr.idx]
 target_test = jaap$prijs[-tr.idx]
 
 
-#### glmnet 
+#### glmnet #############################################################################
 
 glmnet_prijsmodel = cv.glmnet(
   x = dtm_train,
@@ -143,7 +148,7 @@ test_huizenprijs = predict(glmnet_prijsmodel, newx = dtm_test)[,1]
 R2 = 1 - sum((target_test - test_huizenprijs)^2) / sum((target_test - mean(target_test))^2)
 R2
 
-############# xgboost ###################################################################
+#### xgboost ###################################################################
 
 param = list(
   max_depth = 10,
