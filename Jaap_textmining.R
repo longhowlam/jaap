@@ -52,9 +52,23 @@ jaap$id = 1:dim(jaap)[1]
 
 #### Text mining part ###########################################################
 
+### normalize text 
+
+prep_fun = function(x) {
+  x %>% 
+    str_to_lower %>% 
+    str_replace_all("[^[:alnum:]]", " ") %>% 
+    str_replace_all("\\s+", " ")
+}
+
+jaap = jaap %>% 
+  mutate(
+    normalizedText = prep_fun(huisbeschrijving)
+  )
+
 ## tokennize
 
-jaap_tokens = jaap$huisbeschrijving %>% word_tokenizer
+jaap_tokens = jaap$normalizedText %>% word_tokenizer
 
 ### use the tokens to create an iterator and vocabular
 iter = itoken(
@@ -64,7 +78,7 @@ iter = itoken(
 )
 
 ## remove some Dutch stopwords
-stw = tm::stopwords("nl")
+stw = stopwords::stopwords( language = "nl")
 
 vocab = create_vocabulary(
   iter, 
@@ -108,6 +122,7 @@ dim(dtm_test)
 target_train = jaap$prijs[tr.idx]
 target_test = jaap$prijs[-tr.idx]
 
+dtm_train[1,]
 
 #### glmnet #############################################################################
 
@@ -168,7 +183,10 @@ xgbmodel = xgboost(
 varimp = xgb.importance(colnames(dtm_train), model = xgbmodel)
 head(varimp, 25)
 
-### nice plots but not very useful....
+
+
+
+### nice plots but not very useful at all.....
 xgb.plot.tree(colnames(dtm_train), model = xgbmodel, n_first_tree = 3)
 
 p = xgb.plot.multi.trees(
