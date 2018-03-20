@@ -7,10 +7,10 @@ hist(jaap$prijs)
 
 #### LIME : Local Interpretable Model-agnostic Explanations #####
 
-
+#########################################################################################
 ##### binaire classificatie ##############################################
 
-# kunnen we dure huizen voorspellen op basis van text
+# kunnen we dure huizen voorspellen op basis van de beschrijvingen?
 
 TRESHOLD = 750000
 
@@ -90,12 +90,12 @@ plot_features(explanations)
 explanations_2 = lime::explain(sentences, explainer, n_labels = 1, n_features = 30)
 plot_text_explanations(explanations_2)
 
-
 interactive_text_explanations(explainer)
 
 
-###############################################################################
-##### REGRESSIE  ##############################################################
+
+##############################################################################################
+##### REGRESSIE  ######
 
 
 ########## split in train test ###########################################
@@ -116,7 +116,6 @@ get_matrix <- function(text) {
   )
   create_dtm(iter, vectorizer = VV)
 }
-
 
 train_matrix = get_matrix(jaaptrain$normalizedText)
 test_matrix = get_matrix(jaaptest$normalizedText)
@@ -161,28 +160,7 @@ prijzen = c(jaaptest$prijs[laag][1:2], jaaptest$prijs[hoog][1:2])
 explainerREG = lime(jaaptrain$normalizedText, xgb_modelREG, get_matrix)
 explanationsREG = lime::explain(sentences, explainerREG, n_features = 15)
 plot_features(explanationsREG)
-
-explanations_2 = lime::explain(sentences, explainer, n_labels = 1, n_features = 30)
-plot_text_explanations(explanations_2)
-
-
-interactive_text_explanations(explainer)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+prijzen
 
 
 
