@@ -50,7 +50,7 @@ xgb_model <- xgb.train(
     eta = 0.1, 
     objective = "binary:logistic",
     eval_metric = "error", 
-    nthread = 4
+    nthread = 6
   ),
   xgb.DMatrix(
     train_matrix, 
@@ -127,7 +127,7 @@ xgb_modelREG <- xgb.train(
     max_depth = 8,
     eta = 0.1, 
     objective = "reg:linear",
-    nthread = 4
+    nthread = 6
   ),
   xgb.DMatrix(
     train_matrix, 

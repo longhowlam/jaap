@@ -93,6 +93,10 @@ vectorizer = vocab_vectorizer(pruned_vocab)
 dtm = create_dtm(iter, vectorizer)
 dim(dtm)
 
+#eerste rij 
+dtm[1,]
+
+
 # define tfidf model (Inverse document frequency)
 tfidf = TfIdf$new()
 # fit model to train data and transform train data with fitted model
@@ -111,18 +115,11 @@ Ntrain = floor(0.8*nrow(dtm))
 tr.idx = sample(1:nrow(dtm), size = Ntrain)
 
 dtm_train = dtm[tr.idx,]
-dtm_train_tfidf = dtm_tfidf[tr.idx,]
-dim(dtm_train)
-dim(dtm_train_tfidf)
-
 dtm_test = dtm[-tr.idx,]
-dtm_test_tfidf = dtm_tfidf[-tr.idx,]
-dim(dtm_test)
 
 target_train = jaap$prijs[tr.idx]
 target_test = jaap$prijs[-tr.idx]
 
-dtm_train[1,]
 
 #### glmnet #############################################################################
 
