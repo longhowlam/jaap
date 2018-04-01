@@ -32,7 +32,7 @@ get_matrix <- function(text) {
   iter = itoken(text, progressbar = FALSE)
   VV = create_vocabulary(
     iter, 
-    stopwords = stw,
+    stopwords = c(stw, letters),
     ngram = c(ngram_min = 1L, ngram_max = 3L)
   )
   create_dtm(iter, vectorizer = VV)
@@ -99,6 +99,7 @@ interactive_text_explanations(explainer)
 
 
 ########## split in train test ###########################################
+t0 = proc.time()
 
 Njaap = nrow(jaap)
 Ntrain = floor( 0.8 * Njaap)
@@ -159,6 +160,10 @@ prijzen = c(jaaptest$prijs[laag][1:2], jaaptest$prijs[hoog][1:2])
 
 explainerREG = lime(jaaptrain$normalizedText, xgb_modelREG, get_matrix)
 explanationsREG = lime::explain(sentences, explainerREG, n_features = 15)
+
+t1 = proc.time() - t0
+t1
+
 plot_features(explanationsREG)
 prijzen
 
