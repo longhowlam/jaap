@@ -82,7 +82,7 @@ stw = stopwords::stopwords( language = "nl")
 
 vocab = create_vocabulary(
   iter, 
-  stopwords = stw,
+  stopwords = c(stw,letters),
   ngram = c(ngram_min = 1L, ngram_max = 3L)
 )
 
