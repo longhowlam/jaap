@@ -1,13 +1,14 @@
 library(lime)
 library(pROC)
 library(ggplot2)
+library(dplyr)
 
 hist(jaap$prijs)
 
 
 #### LIME : Local Interpretable Model-agnostic Explanations #####
 
-#########################################################################################
+##########################################################################
 ##### binaire classificatie ##############################################
 
 # kunnen we dure huizen voorspellen op basis van de beschrijvingen?
@@ -67,9 +68,18 @@ predOnTest = data.frame(
   predictor = predict(xgb_model,  newdata = test_matrix) 
 )
 
-roc(response ~ predictor, data = predOnTest, plot = TRUE, ci = TRUE)
+roc(
+  response ~ predictor, 
+  data = predOnTest, 
+  plot = TRUE, ci = TRUE
+)
 
-ggplot(predOnTest, aes(prijs, predictor)) + geom_point(alpha = 0.3) + geom_smooth()
+ggplot(
+  predOnTest, 
+  aes(prijs, predictor)
+) + 
+  geom_point(alpha = 0.3) +
+  geom_smooth()
 
 
 ###### LIME verklaringen ################################################
@@ -83,22 +93,37 @@ sentences = c(
   jaaptest$normalizedText[hoog][1:2]
 )
 
-explainer = lime(jaaptrain$normalizedText, xgb_model, get_matrix)
-explanations = lime::explain(sentences, explainer, n_labels = 2, n_features = 10)
+explainer = lime(
+  jaaptrain$normalizedText,
+  xgb_model, get_matrix
+)
+
+explanations = lime::explain(
+  sentences, 
+  explainer,
+  n_labels = 2, 
+  n_features = 10
+)
+
 plot_features(explanations)
 
-explanations_2 = lime::explain(sentences, explainer, n_labels = 1, n_features = 30)
+explanations_2 = lime::explain(
+  sentences, 
+  explainer, 
+  n_labels = 1, 
+  n_features = 30
+)
+
 plot_text_explanations(explanations_2)
 
 interactive_text_explanations(explainer)
 
 
 
-##############################################################################################
 ##### REGRESSIE  ######
 
 
-########## split in train test ###########################################
+########## split in train test ###############
 t0 = proc.time()
 
 Njaap = nrow(jaap)
@@ -144,7 +169,12 @@ predOnTestREG = data.frame(
   predictor = predict(xgb_modelREG,  newdata = test_matrix) 
 )
 
-ggplot(predOnTestREG, aes(prijs, predictor)) + geom_point(alpha = 0.3) + geom_smooth()
+ggplot(
+  predOnTestREG, 
+  aes(prijs, predictor)
+  ) +
+  geom_point(alpha = 0.3) +
+  geom_smooth()
 
 ###### LIME verklaringen ################################################
 
@@ -158,8 +188,17 @@ sentences = c(
 )
 prijzen = c(jaaptest$prijs[laag][1:2], jaaptest$prijs[hoog][1:2])
 
-explainerREG = lime(jaaptrain$normalizedText, xgb_modelREG, get_matrix)
-explanationsREG = lime::explain(sentences, explainerREG, n_features = 15)
+explainerREG = lime(
+  jaaptrain$normalizedText, 
+  xgb_modelREG, 
+  get_matrix
+)
+
+explanationsREG = lime::explain(
+  sentences, 
+  explainerREG, 
+  n_features = 15
+)
 
 t1 = proc.time() - t0
 t1
