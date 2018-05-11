@@ -2,6 +2,7 @@ library(lime)
 library(pROC)
 library(ggplot2)
 library(dplyr)
+library(text2vec)
 
 hist(jaap$prijs)
 
@@ -102,7 +103,7 @@ explanations = lime::explain(
   sentences, 
   explainer,
   n_labels = 2, 
-  n_features = 10
+  n_features = 8
 )
 
 plot_features(explanations)
