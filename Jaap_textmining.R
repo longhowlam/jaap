@@ -52,7 +52,10 @@ jaap$id = 1:dim(jaap)[1]
 
 #### Text mining part ###########################################################
 
-### normalize text 
+stopwoorden_nl =c(
+  stopwords::stopwords( language = "nl"),
+  letters
+  )
 
 prep_fun = function(x) {
   x %>% 
@@ -66,31 +69,28 @@ jaap = jaap %>%
     normalizedText = prep_fun(huisbeschrijving)
   )
 
-## tokennize
+## clean with prep_fun, tokennize, remove stopw and create pruned vocab
+iter = jaap$huisbeschrijving %>% 
+  word_tokenizer() %>%  
+  itoken(
+    ids = jaap$id,
+    progressbar = TRUE
+  )
 
-jaap_tokens = jaap$normalizedText %>% word_tokenizer
+pruned_vocab = iter %>% 
+  create_vocabulary(
+    stopwords = stopwoorden_nl,
+    ngram = c(ngram_min = 1L, ngram_max = 3L)
+  ) %>% 
+  prune_vocabulary(
+    doc_proportion_min = 0.0035 
+  )
 
-### use the tokens to create an iterator and vocabular
-iter = itoken(
-  jaap_tokens, 
-  ids = jaap$id,
-  progressbar = TRUE
-)
-
-## remove some Dutch stopwords
-stw = stopwords::stopwords( language = "nl")
-
-vocab = create_vocabulary(
-  iter, 
-  stopwords = c(stw,letters),
-  ngram = c(ngram_min = 1L, ngram_max = 3L)
-)
-
-pruned_vocab = prune_vocabulary(vocab, doc_proportion_min = 0.0035 )
-
-#### create document term matrix
+#### create the document term matrix
 vectorizer = vocab_vectorizer(pruned_vocab)
 dtm = create_dtm(iter, vectorizer)
+
+
 dim(dtm)
 
 #eerste rij 
@@ -109,19 +109,15 @@ dtm_tfidf[1,]
 
 #### Fit price models ############################################################
 
+#### glmnet ########################################################
 ## split into test and train
-
 Ntrain = floor(0.8*nrow(dtm))
 tr.idx = sample(1:nrow(dtm), size = Ntrain)
 
 dtm_train = dtm[tr.idx,]
 dtm_test = dtm[-tr.idx,]
-
 target_train = jaap$prijs[tr.idx]
 target_test = jaap$prijs[-tr.idx]
-
-
-#### glmnet #############################################################################
 
 glmnet_prijsmodel = cv.glmnet(
   x = dtm_train,
@@ -176,6 +172,14 @@ xgbmodel = xgboost(
 )
 
 
+
+## R squared calculation on the hold out test set
+test_huizenprijs = predict(xgbmodel, newdata =  dtm_test)
+R2_xgb = 1 - sum((target_test - test_huizenprijs)^2) / sum((target_test - mean(target_test))^2)
+R2_xgb
+
+
+
 ## some model diagnostics 
 varimp = xgb.importance(colnames(dtm_train), model = xgbmodel)
 head(varimp, 25)
@@ -194,10 +198,5 @@ p = xgb.plot.multi.trees(
 print(p)
 
 
-## R squared calculation on the hold out test set
-test_huizenprijs = predict(xgbmodel, newdata =  dtm_test)
-R2_xgb = 1 - sum((target_test - test_huizenprijs)^2) / sum((target_test - mean(target_test))^2)
-R2_xgb
-
-
-
+tmpjaap = jaap %>%  select(PC6, longdescription, prijs)
+readr::write_csv(tmpjaap, "jaap_dss.csv")
