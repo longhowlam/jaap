@@ -172,20 +172,14 @@ xgbmodel = xgboost(
 )
 
 
-
 ## R squared calculation on the hold out test set
 test_huizenprijs = predict(xgbmodel, newdata =  dtm_test)
 R2_xgb = 1 - sum((target_test - test_huizenprijs)^2) / sum((target_test - mean(target_test))^2)
 R2_xgb
 
-
-
 ## some model diagnostics 
 varimp = xgb.importance(colnames(dtm_train), model = xgbmodel)
 head(varimp, 25)
-
-
-
 
 ### nice plots but not very useful at all.....
 xgb.plot.tree(colnames(dtm_train), model = xgbmodel, n_first_tree = 3)
@@ -200,3 +194,32 @@ print(p)
 
 tmpjaap = jaap %>%  select(PC6, longdescription, prijs)
 readr::write_csv(tmpjaap, "jaap_dss.csv")
+
+
+########## LSA ##############################################
+
+lsa = LSA$new(n_topics = 300)
+lsa_doc = dtm %>% fit_transform(lsa)
+dim(lsa_doc)
+
+Ntrain = floor(0.8*nrow(lsa_doc))
+tr.idx = sample(1:nrow(dtm), size = Ntrain)
+
+lsa_train = lsa_doc[tr.idx,]
+lsa_test = lsa_doc[-tr.idx,]
+target_train = jaap$prijs[tr.idx]
+target_test = jaap$prijs[-tr.idx]
+
+
+xgbmodel_lsa = xgboost(
+  params = param,
+  data = lsa_train,
+  label = target_train,
+  nrounds = 150,
+  print_every_n = 5L
+)
+
+## R squared calculation on the hold out test set
+test_huizenprijs = predict(xgbmodel_lsa, newdata =  lsa_test)
+R2_xgb_lsa = 1 - sum((target_test - test_huizenprijs)^2) / sum((target_test - mean(target_test))^2)
+R2_xgb_lsa
