@@ -73,7 +73,7 @@ jaap = jaap %>%
 iter = jaap$huisbeschrijving %>% 
   word_tokenizer() %>%  
   itoken(
-    ids = jaap$id,
+    preprocessor = prep_fun,
     progressbar = TRUE
   )
 
